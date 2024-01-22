@@ -1,14 +1,87 @@
-// pages/index.js
+
+'use client'
 import Link from 'next/link';
 import styles from '../app/styles/home.module.css';
-
-const notes = [
-  { id: 1, title: 'Note 1', content: 'This is the content of note 1.' },
-  { id: 2, title: 'Note 2', content: 'This is the content of note 2.' },
-  // Add more notes as needed
-];
+import CustomModal from './Components/Modal';
+import axios from 'axios';
+import { useState , useEffect} from 'react';
 
 const Home = () => {
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [notes, setNotes] = useState([]);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDesc] = useState('');
+
+ 
+  const deleteNote = async (noteId) => {
+    try {
+      const response = await axios.delete(`http://localhost:4000/notes/${noteId}`);
+      console.log(response.data); 
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
+  };
+  const updateNote = async (noteId, updatedData) => {
+    try {
+      const response = await axios.put(`http://localhost:4000/notes/${selectedNote.id}`, {title:newTitle, description:newDescription});
+      console.log(response.data); // Log the response from the server
+      // Optionally, you can handle the response data or perform additional actions
+      closeEditModal()
+    } catch (error) {
+      console.error('Error updating note:', error);
+      // Optionally, you can handle errors, show error messages, etc.
+    }
+  };
+  // Usage example:
+  const handleDeleteNote = (noteId) => {
+    // Call the deleteNote function with the specific noteId
+    deleteNote(noteId);
+  };
+  const openEditModal = (note) => {
+    fetchNoteForEditing(note.id)
+    
+    setEditModalOpen(true);
+  };
+  const fetchNoteForEditing = async (noteId) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/notes/${noteId}`);
+      response.data; // Return the fetched note data
+      setSelectedNote(response.data);
+      console.log(selectedNote)
+    } catch (error) {
+      console.error('Error fetching note for editing:', error);
+      return null;
+    }
+  };
+  const openDeleteModal = (note) => {
+    setSelectedNote(note);
+    setDeleteModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setSelectedNote(null);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setSelectedNote(null);
+  };
+  useEffect(() => {
+  
+    const fetchNotes = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/notes');
+        setNotes(response.data);
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+      }
+    };
+
+    fetchNotes();
+  }, [updateNote]); 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
       <div className={`container mx-auto ${styles.container}`}>
@@ -17,14 +90,14 @@ const Home = () => {
           {notes.map((note) => (
             <li key={note.id} className={`note ${styles.note}`}>
               <h2 className="text-2xl font-bold mb-2 text-black">{note.title}</h2>
-              <p className="text-black">{note.content}</p>
+              <p className="text-black">{note.description}</p>
               <div className={`actions ${styles.actions}`}>
-                <Link href={`/edit/${note.id}`}>
-                  <p className="btn btn-primary">Edit</p>
-                </Link>
-                <Link href={`/delete/${note.id}`}>
-                  <p className="btn btn-danger">Delete</p>
-                </Link>
+                <button onClick={() => openEditModal(note)} className="btn btn-primary">
+                  Edit
+                </button>
+                <button onClick={() => handleDeleteNote(note.id)} className="btn btn-danger">
+                  Delete
+                </button>
               </div>
             </li>
           ))}
@@ -34,6 +107,50 @@ const Home = () => {
             Create Note
           </p>
         </Link>
+        
+        <CustomModal
+          isOpen={editModalOpen}
+          onRequestClose={closeEditModal}
+          title="Edit Note"
+        >
+          {selectedNote && (
+            <>
+            <div className="space-y-2">
+            <label htmlFor="editedTitle" className="block text-sm font-medium text-gray-700">
+              Title:
+            </label>
+            <input
+              type="text"
+              id="editedTitle"
+             defaultValue={selectedNote.title}
+             onChange={(e)=> setNewTitle(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="editedDescription" className="block text-sm font-medium text-gray-700">
+              Description:
+            </label>
+            <textarea
+              id="editedDescription"
+              defaultValue={selectedNote.description}
+              rows="4"
+              onChange={(e)=> setNewDesc(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            ></textarea>
+          </div>
+          <div className="flex justify-center">
+  <button
+    onClick={()=> updateNote()}
+    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-full mt-4"
+  >
+    Edit
+  </button>
+</div>
+          </>
+          )}
+        </CustomModal>
+      
       </div>
     </div>
   );

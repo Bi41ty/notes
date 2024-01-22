@@ -1,20 +1,22 @@
-// pages/create.js
+
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../styles/home.module.css'
-
+import axios from 'axios';
 const CreateNote = () => {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
-  const handleCreateNote = () => {
-    // Implement your logic to create a new note
-    // This could involve sending a request to your backend API
-    // For simplicity, we'll just log the data for now
-    console.log('New Note:', { title, content });
-    router.push('/');
+  const handleCreateNote = async () => {
+    try {
+      const response = await axios.post('http://localhost:4000/notes', { title, description:content });
+      console.log('New Note:', response.data);
+      router.push('/');
+    } catch (error) {
+      console.error('Error creating note:', error);
+    }
   };
 
   return (
