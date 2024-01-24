@@ -26,17 +26,16 @@ const Home = () => {
   const updateNote = async (noteId, updatedData) => {
     try {
       const response = await axios.put(`http://localhost:4000/notes/${selectedNote.id}`, {title:newTitle, description:newDescription});
-      console.log(response.data); // Log the response from the server
-      // Optionally, you can handle the response data or perform additional actions
+      console.log(response.data); 
       closeEditModal()
     } catch (error) {
       console.error('Error updating note:', error);
-      // Optionally, you can handle errors, show error messages, etc.
+     
     }
   };
-  // Usage example:
+  
   const handleDeleteNote = (noteId) => {
-    // Call the deleteNote function with the specific noteId
+    
     deleteNote(noteId);
   };
   const openEditModal = (note) => {
@@ -47,7 +46,7 @@ const Home = () => {
   const fetchNoteForEditing = async (noteId) => {
     try {
       const response = await axios.get(`http://localhost:4000/notes/${noteId}`);
-      response.data; // Return the fetched note data
+      response.data; 
       setSelectedNote(response.data);
       console.log(selectedNote)
     } catch (error) {
