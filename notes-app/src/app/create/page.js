@@ -1,66 +1,77 @@
-
 'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from '../styles/home.module.css'
 import axios from 'axios';
+
 const CreateNote = () => {
-  const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+    const router = useRouter();
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreateNote = async () => {
-    try {
-      const response = await axios.post('http://localhost:4000/notes', { title, description:content });
-      console.log('New Note:', response.data);
-      router.push('/');
-    } catch (error) {
-      console.error('Error creating note:', error);
-    }
-  };
+    const handleCreateNote = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
-      <div className={`container mx-auto ${styles.container}`}>
-        <h1 className="text-4xl font-bold text-white mb-4">Create Note</h1>
-        <form>
-          <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 text-white">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 text-white">
-              Content
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows="4"
-              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-            ></textarea>
-          </div>
-          <button
-            type="button"
-            onClick={handleCreateNote}
-            className="btn btn-primary mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-full"
-          >
-            Create Note
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+        try {
+            const response = await axios.post('http://localhost:4000/notes', {
+                title,
+                description: content,
+            });
+            console.log('New Note:', response.data);
+            router.push('/'); // Redirect after successful creation
+        } catch (error) {
+            console.error('Error creating note:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-500 to-blue-600">
+            <div className="container mx-auto max-w-4xl p-8 bg-white rounded-lg shadow-lg">
+                <h1 className="text-4xl font-semibold text-center text-gray-800 mb-8">Create a New Note</h1>
+                <form onSubmit={handleCreateNote} className="space-y-6">
+                    <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                            Title:
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            required
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+                            Content:
+                        </label>
+                        <textarea
+                            id="content"
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            rows="4"
+                            required
+                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        ></textarea>
+                    </div>
+                    <div className="flex justify-center">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`bg-green-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-600 transition duration-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                        >
+                            {isSubmitting ? 'Creating...' : 'Create Note'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 };
 
 export default CreateNote;
